@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CareOS — A calmer way to find the right therapist</title>
+<style>
+:root{
+  --ink:#183b32;--ink2:#42645a;--muted:#71857d;--cream:#f8f6f0;--paper:#fffdf9;
+  --sage:#dfeee6;--sage2:#eef5f0;--line:#dce6df;--green:#2c6655;--green2:#214d40;
+  --sand:#f2eadc;--gold:#9d7b43;--rose:#f5e9e5;--lilac:#eee8ff;--lilac2:#d9ceff;--peach:#fff0e7;--peach2:#ffd7c4;--mint:#e5f4ec;--sky:#e9f2ff;--shadow:0 20px 60px rgba(34,65,55,.09);
+  --radius:24px
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+.container{width:min(1160px,calc(100% - 40px));margin:auto}
+.header-glass{position:sticky;top:12px;z-index:100;isolation:isolate;width:min(1440px,calc(100% - 48px));margin:12px auto 0;padding:8px 24px;overflow:visible;border-radius:28px;transition:padding .25s cubic-bezier(.22,.61,.36,1)}
+.header-glass:before{content:"";position:absolute;inset:0;z-index:-1;border:1px solid rgba(255,255,255,.75);border-radius:inherit;background:rgba(220,235,226,.5);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 20px 60px rgba(34,65,55,.08);transition:background .25s ease,backdrop-filter .25s ease,box-shadow .25s ease}
+.header-glass.is-scrolled{padding-top:6px;padding-bottom:6px}
+.header-glass.is-scrolled:before{background:rgba(220,235,226,.58);-webkit-backdrop-filter:blur(27px);backdrop-filter:blur(27px);box-shadow:0 21px 62px rgba(34,65,55,.1)}
+.header-main-row{position:relative;min-height:92px;transition:min-height .25s cubic-bezier(.22,.61,.36,1)}
+.header-glass.is-scrolled .header-main-row{min-height:80px}
+.header-glass .header-brand{position:absolute;left:0;top:50%;z-index:2;transform:translateY(-50%);font-size:21px}
+.glass-copy{position:absolute;left:50%;top:50%;z-index:2;width:min(360px,34%);text-align:center;transform:translate(-50%,-50%)}
+.glass-phrase{display:block;font-size:25px;line-height:1.12;font-weight:800;color:var(--ink);white-space:nowrap}.glass-phrase em{font-style:normal;color:#668b79}.glass-sparkle{margin-left:3px;color:#aa8b63;font-size:12px;vertical-align:top}.glass-subtitle{display:block;margin-top:4px;color:#5f786d;font-size:10px;letter-spacing:.1px}.prototype-note{display:block;margin-top:4px;color:#71857d;font-size:8px;line-height:1.2;letter-spacing:.15px}
+.header-nav{position:absolute;right:0;top:50%;z-index:2;display:flex;align-items:center;gap:12px;transform:translateY(-50%)}
+.header-nav .navlinks{gap:11px;font-size:11px;white-space:nowrap}
+.header-nav .navlinks a,.header-nav .dashboard-link{white-space:nowrap}
+.header-nav .nav-actions{gap:0}
+.header-nav #navStart{padding:10px 13px;font-size:11px;white-space:nowrap}
+.header-glass mood-buddy{z-index:5;opacity:.76}
+@media(max-width:1250px){
+  .header-glass{width:calc(100% - 32px);padding:9px 18px}
+  .header-main-row{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"brand copy" "nav nav";align-items:center;gap:9px 16px;min-height:unset;padding:3px 0}
+  .header-glass.is-scrolled .header-main-row{min-height:unset}
+  .header-glass .header-brand{position:relative;left:auto;top:auto;transform:none;grid-area:brand;font-size:20px}
+  .glass-copy{position:relative;left:auto;top:auto;transform:none;grid-area:copy;width:auto;text-align:left}
+  .glass-phrase{font-size:22px}.glass-subtitle{font-size:10px}.prototype-note{font-size:8px}
+  .header-nav{position:relative;right:auto;top:auto;grid-area:nav;transform:none;min-width:0;width:100%;gap:10px}
+  .header-nav .navlinks{flex:1;min-width:0;overflow-x:auto;gap:14px;padding:3px 1px 5px;scrollbar-width:none}
+  .header-nav .navlinks::-webkit-scrollbar{display:none}
+  .header-nav .navlinks a{flex:0 0 auto}
+  .header-nav .nav-actions{flex:0 0 auto}
+  .header-glass mood-buddy{display:none}
+}
+@media(max-width:620px){
+  .header-glass{width:calc(100% - 24px);padding:8px 13px}
+  .header-main-row{gap:8px 11px}
+  .header-glass .header-brand{font-size:19px}
+  .glass-phrase{font-size:20px}.glass-subtitle{font-size:9px}.prototype-note{font-size:7.5px}
+  .header-nav{gap:7px}
+  .header-nav .navlinks{gap:12px}
+  .header-nav #navStart{padding:8px 10px;font-size:10px}
+}
+.brand{font-weight:900;font-size:25px;letter-spacing:-1px}.brand span{font-weight:450}
+.navlinks{display:flex;gap:25px;align-items:center;font-size:13px;color:var(--ink2)}
+.navlinks a:hover{text-decoration:underline;text-underline-offset:5px}
+.nav-actions{display:flex;gap:8px;align-items:center}
+.btn{border:0;border-radius:999px;padding:12px 18px;font-weight:800;font-size:13px}
+.primary{background:var(--green);color:#fff}.primary:hover{background:var(--green2)}
+.soft{background:var(--sage);color:var(--green2)}.outline{background:transparent;border:1px solid #cbdad3;color:var(--green2)}
+.hero{padding:76px 0 55px;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:70px;align-items:center}
+.kicker{text-transform:uppercase;letter-spacing:2px;font-size:11px;font-weight:850;color:#6c887c}
+h1{font-size:clamp(45px,6vw,72px);line-height:.99;letter-spacing:-4px;margin:15px 0 23px;max-width:720px}
+h2{font-size:39px;line-height:1.05;letter-spacing:-1.8px;margin:10px 0 14px}
+h3{letter-spacing:-.5px}
+.lead{font-size:18px;line-height:1.7;color:#5b756c;max-width:650px}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+.trust{display:flex;gap:18px;flex-wrap:wrap;margin-top:23px;font-size:11px;color:#6f837b}.trust span{display:flex;align-items:center;gap:6px}.check{width:18px;height:18px;border-radius:50%;background:var(--sage);display:grid;place-items:center;color:var(--green);font-weight:900}
+.hero-card{background:var(--paper);border:1px solid var(--line);border-radius:32px;padding:30px;box-shadow:var(--shadow);transform:rotate(1deg)}
+.hero-card .topline{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted)}
+.match-card{margin-top:20px;border:1px solid #dce8e0;border-radius:20px;padding:18px;background:#fbfdfb}
+.person{display:flex;gap:12px;align-items:center}.avatar{width:52px;height:52px;border-radius:17px;background:#e4eee8;display:grid;place-items:center;font-weight:900;color:#356354}.person small{display:block;color:var(--muted);margin-top:3px;font-size:11px}
+.score{margin-left:auto;font-weight:900;color:var(--green);font-size:23px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:15px}.tag{font-size:10px;background:#f0f5f1;color:#527067;border-radius:999px;padding:7px 9px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:25px;box-shadow:0 9px 30px rgba(34,65,55,.045)}
+.section{padding:72px 0}.section.alt{background:#f1f5ef}
+.section-head{max-width:700px;margin-bottom:30px}.section-head p{color:var(--muted);line-height:1.7}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.step{padding:22px 18px;background:var(--paper);border:1px solid var(--line);border-radius:20px}.num{font-size:11px;color:#779086;font-weight:900}.step h3{margin:22px 0 7px;font-size:17px}.step p{font-size:12px;line-height:1.6;color:var(--muted)}
+.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.feature{min-height:235px}.feature .icon{width:44px;height:44px;border-radius:15px;background:var(--sage);display:grid;place-items:center;font-size:19px}.feature p{color:var(--muted);line-height:1.65;font-size:13px}
+.quiet{background:var(--sand);border-radius:30px;padding:38px}.quote{font-size:25px;line-height:1.35;letter-spacing:-.6px;max-width:800px}
+.therapists{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.therapist{display:flex;flex-direction:column;gap:16px}.availability{font-size:11px;color:#58746a}.therapist .btn{margin-top:auto}
+.faq{display:grid;gap:9px;max-width:850px}.faq button{width:100%;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:left;color:var(--ink);font-weight:800;display:flex;justify-content:space-between}.answer{display:none;padding:0 18px 18px;color:var(--muted);font-size:13px;line-height:1.65;background:var(--paper);border:1px solid var(--line);border-top:0;border-radius:0 0 16px 16px;margin-top:-10px}.faq-item.open .answer{display:block}
+.footer{padding:50px 0;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}.footer-grid{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap}
+.portal{background:#f0f5f1;padding:70px 0}.portal-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.journey{display:grid;gap:0}.event{display:grid;grid-template-columns:95px 24px 1fr;min-height:72px}.event .time{font-size:10px;color:var(--muted);padding-top:4px}.event .dot{position:relative}.event .dot:before{content:"";position:absolute;top:5px;left:6px;width:9px;height:9px;border-radius:50%;background:#5d917e}.event .dot:after{content:"";position:absolute;top:15px;left:10px;width:1px;bottom:0;background:#d3e2da}.event:last-child .dot:after{display:none}.event strong{font-size:13px}.event p{margin:4px 0;color:var(--muted);font-size:11px}
+.modal-bg{position:fixed;inset:0;background:rgba(19,52,43,.48);display:none;align-items:center;justify-content:center;padding:18px;z-index:120}.modal-bg.open{display:flex}.modal{background:var(--paper);width:min(700px,100%);max-height:90vh;overflow:auto;border-radius:26px;padding:28px;box-shadow:0 30px 100px rgba(0,0,0,.22)}.modal-head{display:flex;justify-content:space-between;gap:15px}.close{border:0;background:#edf3ef;width:36px;height:36px;border-radius:50%;font-size:19px}
+.progress{height:7px;background:#e7eee9;border-radius:99px;overflow:hidden;margin:15px 0 22px}.progress i{display:block;height:100%;width:25%;background:#5e927f;border-radius:99px;transition:.25s}
+.form-step{display:none}.form-step.active{display:block}.form-step h2{font-size:31px}.field{margin-top:18px}.field label{display:block;font-size:12px;font-weight:850;margin-bottom:8px;color:#4d6a61}.field input,.field select,.field textarea{width:100%;padding:13px;border:1px solid #d6e2db;border-radius:13px;background:white;outline:none}.field textarea{min-height:100px}.choices{display:flex;gap:8px;flex-wrap:wrap}.choice{border:1px solid #d3e0d9;background:white;border-radius:999px;padding:10px 13px;font-size:12px}.choice.selected{background:var(--sage);border-color:#9ec1b0;color:#245446;font-weight:850}.modal-actions{display:flex;justify-content:space-between;gap:10px;margin-top:25px}.hidden{display:none!important}
+.result{background:#edf5f0;border-radius:18px;padding:18px;margin-top:18px}.result h3{margin:0 0 5px}.result p{font-size:12px;color:var(--muted);line-height:1.55;margin:0}
+.toast{position:fixed;right:24px;bottom:24px;background:#173b31;color:white;padding:13px 17px;border-radius:13px;display:none;z-index:130;font-size:12px;box-shadow:var(--shadow)}.toast.show{display:block}
+.dashboard-link{font-size:11px;color:#70847c;border-bottom:1px dashed #9db0a8}
+
+/* CareOS V4 — soft personality layer */
+.hero{position:relative}
+.hero:before,.hero:after{content:"";position:absolute;border-radius:50%;pointer-events:none;z-index:-1}
+.hero:before{width:220px;height:220px;background:var(--lilac);opacity:.55;left:-90px;top:120px;filter:blur(2px)}
+.hero:after{width:180px;height:180px;background:var(--peach);opacity:.7;right:-55px;bottom:10px}
+.hero-copy{position:relative}
+.mood-float{position:absolute;right:-12px;top:-18px;display:flex;gap:8px;align-items:flex-end;pointer-events:none}
+.mood-float .bubble{width:42px;height:42px;border-radius:16px;display:grid;place-items:center;font-size:20px;border:2px solid rgba(255,255,255,.85);box-shadow:0 12px 28px rgba(40,55,50,.08);animation:gentleFloat 5s ease-in-out infinite}
+.mood-float .bubble:nth-child(2){transform:translateY(13px);animation-delay:-1.2s;background:var(--peach)}
+.mood-float .bubble:nth-child(3){transform:translateY(4px);animation-delay:-2.1s;background:var(--mint)}
+.bubble.one{background:var(--lilac)}
+.person-avatar{position:relative}
+.person-avatar:after{content:"✦";position:absolute;right:-5px;bottom:-5px;width:19px;height:19px;border-radius:50%;background:#ffe5d7;display:grid;place-items:center;font-size:10px;color:#8d5a3d;border:2px solid white}
+.soft-note{margin-top:18px;background:linear-gradient(135deg,#f3eeff,#fff8f3);border:1px solid #e8ddff;border-radius:18px;padding:12px 14px;display:flex;align-items:center;gap:10px;color:#5b5b6e;font-size:11px}
+.soft-note .note-dot{width:30px;height:30px;border-radius:11px;background:#fff;display:grid;place-items:center;font-size:15px;box-shadow:0 5px 16px rgba(70,60,90,.08)}
+.micro{transition:transform .22s ease,box-shadow .22s ease}
+.micro:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(34,65,55,.09)}
+.mood-section{padding:20px 0 18px}
+.mood-shell{background:#fffaf7;border:1px solid #eadfd8;border-radius:28px;padding:20px 22px;display:flex;align-items:center;justify-content:space-between;gap:20px;box-shadow:0 12px 35px rgba(50,55,45,.045)}
+.mood-copy{min-width:220px}.mood-copy strong{display:block;font-size:15px;letter-spacing:-.2px}.mood-copy span{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+.moods{display:flex;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+.mood{border:1px solid #e2ddd8;background:#fff;border-radius:16px;padding:8px 11px;display:flex;align-items:center;gap:7px;font-size:11px;color:#50645d;transition:.2s ease}
+.mood .mood-icon{width:27px;height:27px;border-radius:10px;display:grid;place-items:center;font-size:14px}
+.mood:hover{transform:translateY(-2px);border-color:#b8cfc3}
+.mood.selected{border-color:#6f9b89;background:#edf6f1;color:#245446;box-shadow:0 7px 18px rgba(44,102,85,.08)}
+.mood:nth-child(1) .mood-icon{background:var(--lilac)}
+.mood:nth-child(2) .mood-icon{background:#ffe7ef}
+.mood:nth-child(3) .mood-icon{background:var(--peach)}
+.mood:nth-child(4) .mood-icon{background:var(--mint)}
+.mood:nth-child(5) .mood-icon{background:var(--sky)}
+.mood-result{font-size:11px;color:#557268;margin-top:9px;display:none}
+.mood-result.show{display:block}
+.addon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.addon{position:relative;overflow:hidden;min-height:150px}
+.addon:after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;right:-25px;top:-25px;opacity:.65}
+.addon.lilac:after{background:var(--lilac)}
+.addon.peach:after{background:var(--peach)}
+.addon.mint:after{background:var(--mint)}
+.addon .addon-icon{width:43px;height:43px;border-radius:14px;display:grid;place-items:center;font-size:19px;margin-bottom:17px;position:relative;z-index:1}
+.addon.lilac .addon-icon{background:var(--lilac)}
+.addon.peach .addon-icon{background:var(--peach)}
+.addon.mint .addon-icon{background:var(--mint)}
+.addon h3{margin:0 0 7px;font-size:16px;position:relative;z-index:1}
+.addon p{margin:0;color:var(--muted);font-size:11px;line-height:1.6;position:relative;z-index:1;max-width:290px}
+.floating-sticker{position:absolute;bottom:18px;right:18px;background:#fff;border:1px solid #eadfd8;border-radius:15px;padding:9px 11px;font-size:10px;color:#66766f;box-shadow:0 12px 24px rgba(40,55,50,.08);animation:gentleFloat 5.5s ease-in-out infinite}
+.choice{transition:.18s ease}
+.choice:hover{transform:translateY(-2px);box-shadow:0 6px 15px rgba(40,60,50,.06)}
+.form-step.active{animation:stepIn .28s ease both}
+.modal{animation:modalIn .28s cubic-bezier(.2,.8,.2,1) both}
+.modal-bg.open{animation:fadeIn .18s ease both}
+@keyframes gentleFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-7px) rotate(1deg)}}
+@keyframes stepIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+@keyframes modalIn{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@media(max-width:900px){
+  .mood-shell{align-items:flex-start;flex-direction:column}.moods{justify-content:flex-start}
+  .addon-grid{grid-template-columns:1fr 1fr}
+  .mood-float{right:0}
+}
+@media(max-width:620px){
+  .addon-grid{grid-template-columns:1fr}
+  .mood-float{display:none}
+  .mood-shell{padding:17px}.moods{gap:7px}.mood{padding:7px 9px}
+}
+
+@media(max-width:900px){.hero-grid,.portal-grid{grid-template-columns:1fr}.steps{grid-template-columns:repeat(2,1fr)}.therapists{grid-template-columns:1fr 1fr}.hero-card{transform:none}}
+@media(max-width:620px){.container{width:min(100% - 28px,1160px)}.hero{padding-top:45px}h1{letter-spacing:-2.5px}.steps,.therapists,.feature-grid{grid-template-columns:1fr}.section{padding:52px 0}.quiet{padding:25px}.quote{font-size:21px}.modal{padding:21px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+.section-personality,.portal,#faq,#internal,.footer{position:relative}
+mood-buddy{position:absolute;left:var(--buddy-x);top:var(--buddy-y);z-index:4;display:block;width:var(--buddy-size);height:calc(var(--buddy-size) * 1.18);margin-left:calc(var(--buddy-size) / -2);margin-top:calc(var(--buddy-size) * -.59);overflow:visible}
+@media(max-width:620px){mood-buddy.mobile-hide{display:none}}
+.awareness-section{position:relative;padding:76px 0 64px;overflow:hidden}
+.awareness-panel{position:relative;isolation:isolate;padding:42px clamp(20px,4vw,48px) 34px;border-radius:30px}
+.awareness-panel:before{content:"";position:absolute;inset:0;z-index:-1;border:1px solid rgba(255,255,255,.82);border-radius:inherit;background:linear-gradient(125deg,rgba(218,237,226,.6),rgba(232,239,228,.42) 48%,rgba(243,231,228,.38));-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:0 18px 52px rgba(34,65,55,.075)}
+.awareness-heading{position:relative;z-index:1;max-width:760px;margin:0 auto 30px;text-align:center}
+.awareness-heading h2{margin:11px 0 13px;font-size:clamp(29px,3vw,38px);line-height:1.12;letter-spacing:-1.2px}
+.awareness-heading p{max-width:680px;margin:0 auto;color:#62786f;font-size:14px;line-height:1.7}
+.awareness-grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.awareness-card{position:relative;z-index:1;min-width:0;padding:25px 26px 23px;border:1px solid rgba(255,255,255,.88);border-radius:22px;background:rgba(255,253,249,.82);box-shadow:0 9px 26px rgba(34,65,55,.055)}
+.awareness-card.global{background:rgba(249,250,244,.77)}
+.awareness-label{display:flex;align-items:center;gap:8px;margin-bottom:17px;color:#6b877b;font-size:10px;font-weight:850;letter-spacing:1.7px;text-transform:uppercase}
+.awareness-label:before{content:"";width:7px;height:7px;border-radius:50%;background:#8eb19d;box-shadow:0 0 0 4px rgba(142,177,157,.14)}
+.global .awareness-label:before{background:#bb9dbf;box-shadow:0 0 0 4px rgba(187,157,191,.14)}
+.lead-stat{padding-bottom:19px;border-bottom:1px solid #e2e9e2}
+.lead-stat strong{display:block;color:var(--ink);font-size:clamp(43px,5vw,62px);font-weight:780;line-height:.98;letter-spacing:-2px}
+.lead-stat p{max-width:420px;margin:9px 0 8px;color:#4e6a5f;font-size:13px;line-height:1.55}
+.stat-source{display:block;color:#839188;font-size:9px;line-height:1.5}
+.support-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 16px;padding-top:18px}
+.support-stat{min-width:0}.support-stat strong{display:block;margin-bottom:4px;color:#315f4e;font-size:19px;font-weight:800;letter-spacing:-.4px}
+.global .support-stat strong{color:#73637c}
+.support-stat p{margin:0 0 5px;color:#657970;font-size:10px;line-height:1.5}
+.support-stat small{color:#87948e;font-size:8px;line-height:1.45}
+.survey-note{margin:15px 0 0;padding:10px 12px;border-radius:12px;background:rgba(224,238,229,.62);color:#63786e;font-size:9px;line-height:1.5}
+.awareness-buddies{position:absolute;inset:0;pointer-events:none}
+.awareness-panel mood-buddy{z-index:0;opacity:.56}
+.awareness-panel mood-buddy .trigger{pointer-events:auto}
+.awareness-panel>mood-buddy:nth-of-type(1){z-index:2;opacity:.85}
+.awareness-panel>mood-buddy:nth-of-type(2){opacity:.48}
+.awareness-hope{position:relative;z-index:1;display:grid;grid-template-columns:1fr auto;align-items:center;gap:22px;margin:28px 0 0;padding:24px 26px;border-top:1px solid rgba(73,112,93,.18)}
+.awareness-hope h3{margin:0 0 8px;font-size:clamp(21px,2.5vw,29px);line-height:1.2;letter-spacing:-.7px}
+.awareness-hope p{max-width:710px;margin:0;color:#5e756a;font-size:12px;line-height:1.65}
+.starting-small{display:block;margin-top:9px;color:#8c7891;font-size:11px;font-weight:750}
+.awareness-cta{white-space:nowrap}.education-note{margin:9px 0 0;color:#849188;font-size:9px;line-height:1.5}
+.awareness-sources{position:relative;z-index:1;margin:18px 26px 0;padding-top:14px;border-top:1px solid rgba(73,112,93,.14)}
+.awareness-sources summary{width:max-content;color:#587368;font-size:10px;font-weight:800;cursor:pointer}
+.awareness-sources ul{display:flex;gap:7px 15px;flex-wrap:wrap;padding:10px 0 0 15px;margin:0;color:#74857d;font-size:9px}
+.awareness-sources a{text-decoration:underline;text-decoration-color:#b6c8bd;text-underline-offset:2px}
+.awareness-sources a:hover{color:var(--green2)}
+@media(max-width:900px){.awareness-hope{grid-template-columns:1fr;gap:14px}.awareness-cta{justify-self:start}}
+@media(max-width:620px){.awareness-section{padding:52px 0}.awareness-panel{padding:30px 15px 22px;border-radius:24px}.awareness-heading{padding:0 5px;margin-bottom:20px}.awareness-heading h2{font-size:29px}.awareness-heading p{font-size:12px}.awareness-grid{grid-template-columns:1fr;gap:12px}.awareness-card{padding:20px 19px;border-radius:18px}.lead-stat strong{font-size:48px}.awareness-hope{padding:20px 5px;margin-top:21px}.awareness-hope h3{font-size:22px}.awareness-hope p{font-size:11px}.awareness-sources{margin:16px 5px 0}.awareness-panel mood-buddy.mobile-hide{display:none}}
+.welcome-buddy{position:fixed!important;left:auto!important;top:auto!important;right:24px;bottom:24px;z-index:40;width:38px;height:45px;margin:0!important}
+.welcome-buddy{transition:opacity .35s ease}
+.welcome-buddy.intro-pending{opacity:0;pointer-events:none}
+.buddy-help{position:fixed;right:70px;bottom:26px;z-index:39;display:flex;align-items:center;gap:5px;padding:5px 7px 5px 10px;border:1px solid rgba(255,255,255,.82);border-radius:999px;background:rgba(255,253,249,.91);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(34,65,55,.1);color:#587368}
+.buddy-help[hidden]{display:none}
+.buddy-help button{padding:0;border:0;background:transparent;color:inherit;font:700 9px/1.2 Inter,ui-sans-serif,system-ui,sans-serif;cursor:pointer}
+.buddy-help-dismiss{width:17px;height:17px;border-radius:50%!important;background:rgba(223,238,230,.8)!important;font-size:13px!important;line-height:1!important}
+mood-buddy.onboarding-highlight{z-index:90!important}
+mood-buddy.onboarding-highlight:after{content:"✦";position:absolute;top:-8px;right:-5px;color:#b58b5b;font-size:13px;line-height:1;pointer-events:none;animation:onboardingSparkle 1.5s ease-out both}
+@keyframes onboardingSparkle{0%{opacity:0;transform:scale(.65) rotate(-12deg)}25%{opacity:.9;transform:scale(1.08) rotate(8deg)}100%{opacity:0;transform:scale(.9) rotate(0)}}
+@media(max-width:820px){.welcome-buddy{right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px))}.buddy-help{right:58px;bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:calc(100vw - 112px);padding:5px 6px 5px 8px}.buddy-help-open{white-space:nowrap}.buddy-help-dismiss{flex:0 0 17px}mood-buddy.onboarding-mobile-spotlight{position:fixed!important;left:auto!important;top:auto!important;right:18px!important;bottom:calc(78px + env(safe-area-inset-bottom,0px))!important;z-index:90!important;display:block!important;width:32px!important;height:38px!important;margin:0!important}}
+@media(prefers-reduced-motion:reduce){.welcome-buddy{transition:none}.buddy-help{transition:none}mood-buddy.onboarding-highlight:after{animation:none!important}}
+
+</style>
+</head>
+<body>
+<header class="header-glass" aria-label="CareOS primary navigation">
+  <div class="header-main-row">
+  <mood-buddy x="8" y="0" size="27" rotation="-2" color="#b8a8d3" expression="calm" shape="soft" animation-delay="-2.4s" animation-duration="8.4s" category="A gentle thought" message="Clear choices make it easier to find your way."></mood-buddy>
+  <mood-buddy x="51" y="0" size="23" rotation="2" color="#d6a18c" expression="curious" shape="round" animation-delay="-4.8s" animation-duration="8s" category="For today" message="It's okay to ask how a decision was made."></mood-buddy>
+  <mood-buddy x="96" y="0" size="25" rotation="-1" color="#8eaf9c" expression="hopeful" shape="taper" animation-delay="-6.2s" animation-duration="8.8s" category="A little reminder" message="Clarity can make the next step feel lighter."></mood-buddy>
+  <a class="brand header-brand" href="#top" aria-label="CareOS home">Care<span>OS</span></a>
+  <div class="glass-copy">
+    <span class="glass-phrase">Transparency is key.<span class="glass-sparkle" aria-hidden="true">✦</span></span>
+    <span class="glass-subtitle">Clear processes. Human decisions. No black boxes.</span>
+    <span class="prototype-note">A small independent product-engineering prototype · Synthetic data only · Not a clinical service</span>
+  </div>
+  <nav class="header-nav" aria-label="Site navigation">
+    <div class="navlinks">
+      <a href="#how">How it works</a><a href="#therapists">Therapists</a><a href="#journey">Your journey</a><a href="#faq">Questions</a><a class="dashboard-link" href="#internal">Care team demo</a>
+    </div>
+    <div class="nav-actions"><button class="btn primary" id="navStart">Find your fit →</button></div>
+  </nav>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero section-personality">
+<mood-buddy class="mobile-hide" x="93" y="13" size="40" rotation="-3" color="#6e9b85" expression="curious" shape="taper" animation-delay="-1.2s" animation-duration="7.4s" category="A little reminder" message="Taking one small step still counts."></mood-buddy>
+<div class="container hero-grid">
+  <div class="hero-copy">
+    <div class="mood-float"><span class="bubble one">☁️</span><span class="bubble">♡</span><span class="bubble">✦</span></div>
+    <div class="kicker">A calmer way to begin therapy</div>
+    <h1>Finding the right therapist shouldn't feel like a second job.</h1>
+    <p class="lead">Tell us what you're looking for. We'll turn your preferences into a thoughtful shortlist, help you meet a therapist, and make it easy to change direction if the fit doesn't feel right.</p>
+    <div class="hero-actions"><button class="btn primary" id="heroStart">Start a free matching flow →</button><a class="btn soft" href="#how">See how it works</a></div>
+    <div class="trust"><span><i class="check">✓</i>Human-led matching</span><span><i class="check">✓</i>Free intro conversation</span><span><i class="check">✓</i>Re-match when needed</span></div>
+    <div class="soft-note"><span class="note-dot">🌱</span><span><b>Small steps count.</b> You do not need to have everything figured out before starting.</span></div>
+  </div>
+  <div class="hero-card">
+    <div class="topline"><span>Your potential match</span><span style="color:#668277">CareOS demo</span></div>
+    <div class="match-card">
+      <div class="person"><div class="avatar person-avatar">AR</div><div><b>Dr. Ananya Rao</b><small>Psychologist · English / Telugu</small></div><div class="score">94%</div></div>
+      <div class="tags"><span class="tag">Evening availability</span><span class="tag">Warm + collaborative</span><span class="tag">Online</span></div>
+      <p style="font-size:12px;line-height:1.6;color:#617970">Strong operational fit based on the preferences you shared. A qualified human still reviews the recommendation.</p>
+      <button class="btn primary" style="width:100%" id="heroBook">View available intro times</button>
+    </div>
+    <p style="font-size:10px;color:#83938d;margin:16px 3px 0">Match scores are illustrative product signals, not clinical judgments.</p>
+  </div>
+</div>
+</section>
+
+<section class="mood-section section-personality">
+<div class="container">
+  <div class="mood-shell">
+    <div class="mood-copy">
+      <strong>How are you arriving today?</strong>
+      <span>Pick a vibe — not a diagnosis. Just a gentle starting point.</span>
+      <div class="mood-result" id="moodResult"></div>
+    </div>
+    <div class="moods" id="moods">
+      <button class="mood" data-vibe="A little overwhelmed"><span class="mood-icon">🌧️</span>Overwhelmed</button>
+      <button class="mood" data-vibe="A bit low"><span class="mood-icon">🌙</span>A bit low</button>
+      <button class="mood" data-vibe="Restless or busy"><span class="mood-icon">🌪️</span>Restless</button>
+      <button class="mood" data-vibe="Doing okay"><span class="mood-icon">🌿</span>Doing okay</button>
+      <button class="mood" data-vibe="Ready for a change"><span class="mood-icon">☀️</span>Ready for change</button>
+    </div>
+  </div>
+</div>
+</section>
+
+
+<section class="section" style="padding-top:35px;padding-bottom:30px">
+<div class="container">
+  <div class="section-head"><span class="mood-sprinkle" aria-hidden="true"></span>
+    <div class="kicker">Little things that help</div>
+    <h2>Support should feel human, too.</h2>
+    <p>Small product touches can make a therapy journey feel less clinical and a little easier to navigate.</p>
+  </div>
+  <div class="addon-grid">
+    <div class="card addon lilac micro">
+      <div class="addon-icon">💬</div>
+      <h3>Ask the care team</h3>
+      <p>Not sure what happens next? Send a simple question without hunting through menus.</p>
+    </div>
+    <div class="card addon peach micro">
+      <div class="addon-icon">🫶</div>
+      <h3>Re-match gently</h3>
+      <p>If the first fit isn't comfortable, changing direction is treated as part of the journey.</p>
+    </div>
+    <div class="card addon mint micro">
+      <div class="addon-icon">🗓️</div>
+      <h3>Keep the logistics easy</h3>
+      <p>See intro times, next steps and follow-ups together instead of across scattered screens.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="section section-personality" id="how">
+<mood-buddy class="mobile-hide" x="96" y="12" size="36" rotation="2" color="#b58b5b" expression="hopeful" shape="round" animation-delay="-3.4s" animation-duration="8s" category="For today" message="You don't have to have everything figured out today."></mood-buddy>
+<div class="container">
+<div class="section-head"><div class="kicker">Simple by design</div><h2>Start slowly. Decide when you're ready.</h2><p>The product keeps the first steps low-pressure. You don't need to know exactly what kind of therapy you need before you begin.</p></div>
+<div class="steps">
+<div class="step"><div class="num">01</div><h3>Tell us what matters</h3><p>A short, friendly intake captures your concerns, preferences, language and availability.</p></div>
+<div class="step"><div class="num">02</div><h3>Meet your match</h3><p>A matching psychologist helps connect you with a therapist who may suit your needs.</p></div>
+<div class="step"><div class="num">03</div><h3>Have a free intro</h3><p>Ask questions, understand their approach and notice how the conversation feels.</p></div>
+<div class="step"><div class="num">04</div><h3>Start when ready</h3><p>Book a session only when you're comfortable continuing with the therapist.</p></div>
+<div class="step"><div class="num">05</div><h3>Change direction</h3><p>If it doesn't feel right, request another match. The journey doesn't end there.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section alt">
+<div class="container">
+<div class="section-head"><div class="kicker">What makes the experience calmer</div><h2>Less searching. More support.</h2><p>These are product principles for the prototype, informed by publicly visible patterns across therapy platforms.</p></div>
+<div class="feature-grid">
+<div class="card feature"><div class="icon">♡</div><h3>Human-led, not algorithm-led</h3><p>AI can help structure information and surface operational signals. It should not diagnose someone or autonomously decide their treatment.</p></div>
+<div class="card feature"><div class="icon">↺</div><h3>Re-matching is normal</h3><p>Not every good therapist is the right therapist for every person. The interface makes changing direction feel like a normal part of the journey.</p></div>
+<div class="card feature"><div class="icon">◷</div><h3>Scheduling without friction</h3><p>Show only useful available times, keep reminders gentle, and connect booking with the rest of the care journey.</p></div>
+<div class="card feature"><div class="icon">☏</div><h3>A real person behind the process</h3><p>A care team can see operational issues such as rescheduling, follow-ups and re-match requests without exposing unnecessary clinical detail.</p></div>
+</div>
+</div>
+</section>
+
+<section class="section section-personality" id="therapists">
+<mood-buddy class="mobile-hide" x="96" y="13" size="38" rotation="-1" color="#b88479" expression="shy" shape="soft" animation-delay="-5.1s" animation-duration="7.8s" category="A gentle thought" message="You are allowed to change your mind about what you need."></mood-buddy>
+<div class="container">
+<div class="section-head"><div class="kicker">A sense of fit</div><h2>Meet people, not search results.</h2><p>Profiles are designed to answer the questions people naturally have before an introductory conversation.</p></div>
+<div class="therapists">
+<div class="card therapist micro"><div class="person"><div class="avatar">AR</div><div><b>Dr. Ananya Rao</b><small>Psychologist · English / Telugu</small></div></div><p class="tiny" style="line-height:1.7">Warm, collaborative and structured. Available for online sessions in the evening.</p><div class="tags"><span class="tag">CBT-informed</span><span class="tag">Adults</span><span class="tag">Evenings</span></div><div class="availability">Next intro: Tomorrow · 6:00 PM</div><button class="btn primary bookTherapist" data-name="Dr. Ananya Rao">See intro times</button></div>
+<div class="card therapist micro"><div class="person"><div class="avatar">SK</div><div><b>Shreya Kapoor</b><small>Psychotherapist · English / Hindi</small></div></div><p class="tiny" style="line-height:1.7">Reflective and conversational. Offers weekday evenings and Saturday mornings.</p><div class="tags"><span class="tag">Integrative</span><span class="tag">Adults</span><span class="tag">Weekend</span></div><div class="availability">Next intro: Saturday · 11:00 AM</div><button class="btn primary bookTherapist" data-name="Shreya Kapoor">See intro times</button></div>
+<div class="card therapist micro"><div class="person"><div class="avatar">RM</div><div><b>Rhea Menon</b><small>Psychotherapist · English</small></div></div><p class="tiny" style="line-height:1.7">Grounded and practical. Online availability during late afternoons and evenings.</p><div class="tags"><span class="tag">ACT-informed</span><span class="tag">Adults</span><span class="tag">Online</span></div><div class="availability">Next intro: Monday · 7:00 PM</div><button class="btn primary bookTherapist" data-name="Rhea Menon">See intro times</button></div>
+</div>
+</div>
+</section>
+
+<section class="section">
+<div class="container quiet">
+<div class="kicker">The product idea</div>
+<p class="quote">“The goal isn't to convince someone to stay with the first therapist they meet. The goal is to make finding a comfortable, appropriate fit feel supported.”</p>
+<p class="tiny">CareOS is an independent engineering prototype. It does not represent Mindbun's internal systems or data.</p>
+</div>
+</section>
+
+<section class="portal" id="journey">
+<mood-buddy x="94" y="98" size="32" rotation="3" color="#6e9b85" expression="calm" shape="soft" animation-delay="-2.7s" animation-duration="8.3s" category="Take a breath" message="Rest is part of moving forward."></mood-buddy>
+<div class="container portal-grid">
+<div>
+<div class="kicker">Your care journey</div><h2>Everything in one calm place.</h2><p class="lead" style="font-size:15px">A client should always know what happened, what comes next, and who to contact if something changes.</p>
+<div class="hero-actions"><button class="btn primary" id="portalIntake">Continue intake</button><button class="btn outline" id="messageCare">Message care team</button></div>
+</div>
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center"><b>Ananya's journey</b><span class="tag">Demo</span></div>
+<div class="journey" style="margin-top:20px">
+<div class="event"><div class="time">Mon</div><div class="dot"></div><div><strong>Matching call completed</strong><p>Your preferences were captured.</p></div></div>
+<div class="event"><div class="time">Mon</div><div class="dot"></div><div><strong>Therapist recommended</strong><p>Dr. Ananya Rao is available tomorrow.</p></div></div>
+<div class="event"><div class="time">Tomorrow</div><div class="dot"></div><div><strong>Free intro conversation</strong><p>6:00 PM · Online</p></div></div>
+<div class="event"><div class="time">Next</div><div class="dot"></div><div><strong>Your decision</strong><p>Continue, ask a question, or request a re-match.</p></div></div>
+</div>
+</div>
+</div>
+</section>
+
+<section class="section" id="faq">
+<mood-buddy class="mobile-hide" x="96" y="12" size="36" rotation="-2" color="#8098a4" expression="thoughtful" shape="taper" animation-delay="-4.2s" animation-duration="7.6s" category="A little reminder" message="Your feelings don't need perfect words to deserve space."></mood-buddy>
+<div class="container">
+<div class="section-head"><div class="kicker">Questions</div><h2>Things you might want to know.</h2></div>
+<div class="faq">
+<div class="faq-item"><button>Do I need to know what kind of therapy I need? <span>+</span></button><div class="answer">No. The intake is designed to start with what you're experiencing and what matters to you, rather than expecting you to know the right clinical terminology.</div></div>
+<div class="faq-item"><button>What if I don't click with the therapist? <span>+</span></button><div class="answer">The prototype treats re-matching as a normal part of the journey. You can tell the care team what you would like to change and explore another match.</div></div>
+<div class="faq-item"><button>Is the AI making the therapy decision? <span>+</span></button><div class="answer">No. In this prototype, AI is limited to assistance such as structuring intake information. Clinical decisions remain with qualified humans.</div></div>
+<div class="faq-item"><button>Is this a real therapy service? <span>+</span></button><div class="answer">No. This is a product-engineering demonstration using synthetic data. It is not a clinical service or emergency support.</div></div>
+</div>
+</div>
+</section>
+
+<section class="section" id="internal" style="background:#123229;color:#eef6f1">
+<mood-buddy class="mobile-hide" x="96" y="15" size="38" rotation="1" color="#a8c5b6" expression="sleepy" shape="round" animation-delay="-6s" animation-duration="8.6s" category="You've got this" message="Asking for support is a thoughtful next step."></mood-buddy>
+<div class="container">
+<div class="kicker" style="color:#a6c1b6">For the engineering team</div><h2 style="color:white">The client experience is only one side.</h2>
+<p style="max-width:720px;color:#b9cdc5;line-height:1.7">Behind it is a care-operations layer for matching queues, therapist availability, scheduling, follow-ups and product analytics. That's the internal system this internship could involve building across.</p>
+<div class="grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:24px">
+<div class="card" style="background:#193e34;border-color:#31584d;color:white"><b>18</b><div class="tiny" style="color:#b9cdc5">pending matches</div></div>
+<div class="card" style="background:#193e34;border-color:#31584d;color:white"><b>32</b><div class="tiny" style="color:#b9cdc5">intro calls today</div></div>
+<div class="card" style="background:#193e34;border-color:#31584d;color:white"><b>11</b><div class="tiny" style="color:#b9cdc5">follow-ups due</div></div>
+<div class="card" style="background:#193e34;border-color:#31584d;color:white"><b>4</b><div class="tiny" style="color:#b9cdc5">re-match requests</div></div>
+</div>
+<p style="margin-top:22px"><button class="btn soft" id="openOps">Open care operations demo →</button></p>
+</div>
+</section>
+
+<section class="awareness-section" id="awareness" aria-labelledby="awareness-title">
+<div class="container">
+<div class="awareness-panel">
+  <div class="awareness-buddies" aria-hidden="true"></div>
+  <mood-buddy class="mobile-hide" x="95" y="8" size="31" rotation="-2" color="#b9a8d2" expression="thoughtful" shape="soft" animation-delay="-2.8s" animation-duration="8.4s" category="A gentle thought" message="Understanding can start with a small question."></mood-buddy>
+  <mood-buddy class="mobile-hide" x="50" y="56" size="29" rotation="2" color="#d7a18e" expression="shy" shape="round" animation-delay="-4.7s" animation-duration="8.8s" category="For today" message="There is no single right way to ask for support."></mood-buddy>
+  <mood-buddy class="mobile-hide" x="25" y="45" size="36" rotation="-3" color="#8eaf9c" expression="calm" shape="taper" animation-delay="-5.5s" animation-duration="9s" category="A little reminder" message="Being heard can begin with being honest."></mood-buddy>
+  <mood-buddy x="91" y="96" size="32" rotation="1" color="#b9a8d2" expression="hopeful" shape="soft" animation-delay="-3.6s" animation-duration="8.2s" category="You can take your time" message="Starting small still counts."></mood-buddy>
+  <div class="awareness-heading">
+    <div class="kicker">Mental Health Awareness <span aria-hidden="true">✦</span></div>
+    <h2 id="awareness-title">Mental health deserves the same attention as physical health.</h2>
+    <p>Millions of people experience mental health challenges. Awareness, understanding, and reaching out for support can make the first step feel a little less difficult.</p>
+  </div>
+  <div class="awareness-grid">
+    <article class="awareness-card">
+      <div class="awareness-label">India</div>
+      <div class="lead-stat"><strong>10.56%</strong><p>of adults in the 12-state NMHS sample met the survey criteria for current mental morbidity.</p><small class="stat-source">Source: NIMHANS National Mental Health Survey, 2015–16 · 34,802 adults</small></div>
+      <div class="support-stats">
+        <div class="support-stat"><strong>13.67%</strong><p>lifetime prevalence among surveyed adults</p><small>NIMHANS NMHS results · 2015–16</small></div>
+        <div class="support-stat"><strong>&lt;30 million</strong><p>were seeking care, against nearly 150 million estimated to need it</p><small>NIMHANS NMHS report · 2016</small></div>
+      </div>
+      <p class="survey-note">These are historical survey findings from 12 states, not a current-year estimate for all of India.</p>
+    </article>
+    <article class="awareness-card global">
+      <div class="awareness-label">Globally</div>
+      <div class="lead-stat"><strong>1.2 billion</strong><p>people worldwide were living with a mental disorder in 2023 — nearly 1 in 7 people.</p><small class="stat-source">Source: WHO Mental Disorders fact sheet · published 2026 · estimates for 2023</small></div>
+      <div class="support-stats">
+        <div class="support-stat"><strong>470 million</strong><p>people lived with an anxiety disorder in 2023</p><small>WHO fact sheet · 2026 publication</small></div>
+        <div class="support-stat"><strong>322 million</strong><p>people lived with depression in 2023</p><small>WHO fact sheet · 2026 publication</small></div>
+        <div class="support-stat"><strong>1 in 3</strong><p>people with depression receive formal mental health care</p><small>WHO fact sheet · 2026; evidence review spans 2000–19</small></div>
+      </div>
+    </article>
+  </div>
+  <div class="awareness-hope">
+    <div><h3>Reaching out is a step worth being proud of.</h3><p>You don't have to wait until things feel impossible. Asking a question, talking to someone you trust, or exploring support can all be meaningful first steps.</p><span class="starting-small">Starting small still counts.</span><p class="education-note">Information shown here is educational and not a substitute for professional medical advice.</p></div>
+    <a class="btn primary awareness-cta" href="#heroStart">Explore support →</a>
+  </div>
+  <details class="awareness-sources" open><summary>Sources</summary><ul>
+    <li><a href="https://indianmhs.nimhans.ac.in/phase1/nmhs-results" target="_blank" rel="noopener">NIMHANS NMHS results</a></li>
+    <li><a href="https://indianmhs.nimhans.ac.in/phase1/index" target="_blank" rel="noopener">NIMHANS NMHS report foreword</a></li>
+    <li><a href="https://indianmhs.nimhans.ac.in/phase1/detailed-news.php?eid=6" target="_blank" rel="noopener">NIMHANS NMHS report release and coverage</a></li>
+    <li><a href="https://www.who.int/news-room/fact-sheets/detail/mental-disorders" target="_blank" rel="noopener">WHO Mental disorders fact sheet</a></li>
+    <li><a href="https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.1003901" target="_blank" rel="noopener">Moitra et al., PLOS Medicine, 2022</a></li>
+  </ul></details>
+</div>
+</div>
+</section>
+</main>
+
+<footer class="footer"><mood-buddy class="mobile-hide" x="92" y="50" size="32" rotation="-2" color="#b58b5b" expression="hopeful" shape="soft" animation-delay="-3.8s" animation-duration="7.9s" category="For today" message="Progress can be quiet."></mood-buddy><div class="container footer-grid"><div><b style="color:var(--ink)">CareOS</b> · independent engineering prototype</div><div>Synthetic data · Human-led care · Thoughtful AI</div></div></footer>
+
+<mood-buddy class="welcome-buddy" x="92" y="50" size="38" rotation="1" color="#8eaf9c" expression="gentle" shape="round" animation-delay="-1.6s" animation-duration="8.5s" category="A little reminder" message="Taking one small step still counts."></mood-buddy>
+<div class="buddy-help" id="buddyHelp" hidden>
+  <button class="buddy-help-open" type="button">✦ Discover little reminders</button>
+  <button class="buddy-help-dismiss" type="button" aria-label="Dismiss reminder hint">×</button>
+</div>
+
+<div class="modal-bg" id="intakeModal">
+<div class="modal">
+<div class="modal-head"><div><div class="kicker">Matching flow</div><h2 id="modalTitle">Let's start gently.</h2><p class="tiny" id="modalSub">A few questions help us understand what matters to you.</p></div><button class="close" id="closeModal">×</button></div>
+<div class="progress"><i id="progressBar"></i></div>
+
+<div class="form-step active" data-step="1">
+<h2>What would you like support with?</h2><p class="tiny">Choose anything that feels relevant. There is no “right” answer.</p>
+<div class="choices" data-group="concern"><button class="choice">🌧️ Stress or overwhelm</button><button class="choice">💗 Relationships</button><button class="choice">💼 Work or burnout</button><button class="choice">🌱 Self-confidence</button><button class="choice">🌤️ Life changes</button><button class="choice">✨ I'm not sure yet</button></div>
+</div>
+<div class="form-step" data-step="2">
+<h2>What would make sessions comfortable?</h2><p class="tiny">These preferences help with practical fit.</p>
+<div class="field"><label>Preferred language</label><div class="choices" data-group="language"><button class="choice">English</button><button class="choice">Telugu</button><button class="choice">Hindi</button><button class="choice">Tamil</button><button class="choice">Kannada</button></div></div>
+<div class="field"><label>Preferred time</label><div class="choices" data-group="time"><button class="choice">Morning</button><button class="choice">Afternoon</button><button class="choice">Evening</button><button class="choice">Weekend</button></div></div>
+</div>
+<div class="form-step" data-step="3">
+<h2>Tell us a little more</h2><p class="tiny">Optional. You can keep this as brief as you like.</p>
+<div class="field"><label>In your own words</label><textarea id="freeText" placeholder="For example: I've been feeling overwhelmed at work and would like someone practical and easy to talk to."></textarea></div>
+<div class="field"><label>How would you prefer to meet?</label><select id="format"><option>Online</option><option>I'm open to online or in-person</option></select></div>
+</div>
+<div class="form-step" data-step="4">
+<h2>Your demo matches are ready.</h2><p class="tiny">These are illustrative recommendations based on the preferences above.</p>
+<div class="result"><h3>Dr. Ananya Rao · 94% operational fit</h3><p>English / Telugu · Evening availability · Online · Warm + collaborative</p></div>
+<div class="result"><h3>Shreya Kapoor · 88% operational fit</h3><p>English / Hindi · Weekend availability · Online · Reflective + conversational</p></div>
+<div class="safe" style="margin-top:14px">A qualified human reviews matching decisions. This demo does not diagnose or recommend treatment.</div>
+</div>
+<div class="modal-actions"><button class="btn outline" id="prevStep">Back</button><button class="btn primary" id="nextStep">Continue →</button></div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+const headerGlass=document.querySelector('.header-glass');
+const updateHeaderGlass=()=>headerGlass.classList.toggle('is-scrolled',window.scrollY>32);
+window.addEventListener('scroll',updateHeaderGlass,{passive:true});
+updateHeaderGlass();
+const toast = msg => {const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2400)};
+const modal=document.getElementById('intakeModal'), steps=[...document.querySelectorAll('.form-step')], bar=document.getElementById('progressBar');
+let current=1;
+function openIntake(){current=1;steps.forEach((s,i)=>s.classList.toggle('active',i===0));bar.style.width='25%';document.getElementById('prevStep').style.visibility='hidden';document.getElementById('nextStep').textContent='Continue →';modal.classList.add('open')}
+function closeIntake(){modal.classList.remove('open')}
+['heroStart','navStart','portalIntake'].forEach(id=>document.getElementById(id).addEventListener('click',openIntake));
+document.getElementById('closeModal').addEventListener('click',closeIntake);
+modal.addEventListener('click',e=>{if(e.target===modal)closeIntake()});
+document.querySelectorAll('.choices').forEach(group=>group.addEventListener('click',e=>{if(e.target.classList.contains('choice')){group.querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));e.target.classList.add('selected')}}));
+document.getElementById('nextStep').addEventListener('click',()=>{
+ if(current<4){current++;steps.forEach((s,i)=>s.classList.toggle('active',i===current-1));bar.style.width=(current*25)+'%';document.getElementById('prevStep').style.visibility='visible';if(current===4)document.getElementById('nextStep').textContent='Book an intro →';}
+ else {closeIntake();toast('Great — intro booking is ready.');document.getElementById('journey').scrollIntoView({behavior:'smooth'})}
+});
+document.getElementById('prevStep').addEventListener('click',()=>{if(current>1){current--;steps.forEach((s,i)=>s.classList.toggle('active',i===current-1));bar.style.width=(current*25)+'%';if(current===1)document.getElementById('prevStep').style.visibility='hidden';document.getElementById('nextStep').textContent='Continue →'}});
+document.querySelectorAll('.bookTherapist').forEach(b=>b.addEventListener('click',()=>{openIntake();toast('Opening the matching flow…')}));
+document.getElementById('heroBook').addEventListener('click',()=>{openIntake();current=4;steps.forEach((s,i)=>s.classList.toggle('active',i===3));bar.style.width='100%';document.getElementById('prevStep').style.visibility='visible';document.getElementById('nextStep').textContent='Book an intro →'});
+document.getElementById('messageCare').addEventListener('click',()=>toast('Demo message: “Hi, I have a question about my next step.”'));
+document.querySelectorAll('.faq-item button').forEach(b=>b.addEventListener('click',()=>b.parentElement.classList.toggle('open')));
+document.getElementById('openOps').addEventListener('click',()=>toast('Care Operations demo would open here — matching queue, scheduling and follow-ups.'));
+
+document.querySelectorAll('.mood').forEach(m=>{
+  m.addEventListener('click',()=>{
+    document.querySelectorAll('.mood').forEach(x=>x.classList.remove('selected'));
+    m.classList.add('selected');
+    const result=document.getElementById('moodResult');
+    result.textContent='Saved for this demo: '+m.dataset.vibe+'. We can use this as a conversation starter — not a clinical label.';
+    result.classList.add('show');
+  });
+});
+
+let activeMoodBuddy=null;
+class MoodBuddy extends HTMLElement{
+  static get observedAttributes(){return ['x','y','size','rotation','color','expression','shape','animation-delay','animation-duration','message','category']}
+  constructor(){
+    super();
+    this.attachShadow({mode:'open'});
+    this.shadowRoot.innerHTML=`
+      <style>
+        :host{display:block}*{box-sizing:border-box}
+        .trigger{width:100%;height:100%;padding:0;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;border-radius:50%;-webkit-tap-highlight-color:transparent}
+        .trigger:focus-visible{outline:2px solid #2c6655;outline-offset:4px}
+        .trigger.guide-arriving{animation:buddyArrival .4s cubic-bezier(.22,.61,.36,1) both}
+        .drift{width:100%;height:100%;display:grid;place-items:center;animation:float var(--buddy-duration) cubic-bezier(.22,.61,.36,1) var(--buddy-delay) infinite}
+        .creature{position:relative;width:82%;height:88%;border:1px solid rgba(255,255,255,.84);border-radius:48% 52% 43% 49% / 43% 46% 54% 57%;background:radial-gradient(ellipse at 32% 23%,rgba(255,255,255,.97),color-mix(in srgb,var(--buddy-color) 24%,white) 40%,color-mix(in srgb,var(--buddy-color) 70%,white));box-shadow:0 0 13px color-mix(in srgb,var(--buddy-color) 36%,transparent),inset -3px -5px 10px rgba(38,67,55,.09),inset 2px 3px 8px rgba(255,255,255,.76);animation:glow 5.8s ease-in-out var(--buddy-delay) infinite;transition:transform .3s ease,box-shadow .3s ease}
+        :host(.onboarding-highlight) .creature{transform:scale(1.07);box-shadow:0 0 21px color-mix(in srgb,var(--buddy-color) 54%,transparent),inset -3px -5px 10px rgba(38,67,55,.08),inset 2px 3px 8px rgba(255,255,255,.84)}
+        .shape-round{border-radius:51% 49% 47% 53% / 47% 48% 52% 53%}.shape-taper{border-radius:48% 52% 34% 38% / 51% 54% 35% 39%}.shape-soft{border-radius:44% 56% 50% 46% / 44% 47% 53% 56%}
+        .shape-pear{border-radius:52% 48% 42% 58% / 39% 47% 53% 61%}.shape-wisp{border-radius:46% 54% 27% 34% / 56% 48% 30% 37%}.shape-cloud{border-radius:53% 47% 51% 49% / 45% 42% 58% 55%}
+        .face{position:absolute;inset:0;color:#315b4d}
+        .eye{position:absolute;top:43%;width:3px;height:4px;border-radius:50%;background:currentColor;animation:blink 8s ease-in-out var(--buddy-delay) infinite}
+        .eye.left{left:34%}.eye.right{right:34%;animation-delay:calc(var(--buddy-delay) - 1.1s)}
+        .mouth{position:absolute;left:50%;bottom:29%;width:7px;height:4px;border-bottom:1.5px solid currentColor;border-radius:0 0 8px 8px;transform:translateX(-50%)}
+        .curious .eye.right{transform:scale(1.25)}.curious .mouth{width:4px;height:5px;border:1px solid currentColor;border-radius:50%;bottom:26%}
+        .hopeful .mouth{width:8px;height:5px;border-bottom-width:1.6px}.sleepy .eye{top:44%;width:5px;height:2px;border-radius:3px;animation:none}.sleepy .mouth{width:5px;height:3px}
+        .thoughtful .eye.left{height:3px}.thoughtful .eye.right{height:2px;top:44%}
+        .shy:after{content:"";position:absolute;width:5px;height:2px;left:23%;top:54%;border-radius:50%;background:color-mix(in srgb,var(--buddy-color) 50%,white);box-shadow:15px 0 0 color-mix(in srgb,var(--buddy-color) 50%,white)}
+        .happy .mouth{width:9px;height:6px;border-bottom-width:2px}.resting .eye{top:45%;height:2px;border-radius:4px;animation:none}.resting .mouth{width:5px;border-bottom:1px solid currentColor}
+        .brave .eye.left{transform:rotate(-12deg) scaleY(.8)}.brave .eye.right{transform:rotate(12deg) scaleY(.8)}.brave .mouth{width:6px;height:2px;border-bottom-width:1px}
+        .gentle .eye{height:3px;opacity:.82}.gentle .mouth{width:6px;height:4px;border-bottom-width:1px;opacity:.85}
+        .trigger:hover .creature,.trigger.is-open .creature{box-shadow:0 0 19px color-mix(in srgb,var(--buddy-color) 48%,transparent),inset -3px -5px 10px rgba(38,67,55,.08),inset 2px 3px 8px rgba(255,255,255,.84)}
+        .trigger:hover{transform:scale(1.07)}.trigger.is-open{transform:scale(1.1)}
+        .popover{position:fixed;z-index:100;width:min(250px,calc(100vw - 28px));padding:15px 37px 15px 16px;border:1px solid #dce6df;border-radius:16px;background:#fffdf9;color:#183b32;box-shadow:0 14px 38px rgba(24,59,50,.16);transform-origin:top center}
+        .popover.is-entering{animation:cardIn .2s cubic-bezier(.22,.61,.36,1) both}
+        .popover.is-guide{width:min(290px,calc(100vw - 28px));padding:16px 37px 14px 16px;border-radius:20px;background:rgba(255,253,249,.96);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+        .popover.is-guide.is-entering{animation:guideCardIn .38s cubic-bezier(.22,.61,.36,1) .12s both}
+        .popover[hidden],.guide-content[hidden],.reminder-content[hidden]{display:none}.category{display:flex;align-items:center;gap:6px;color:#6b877b;font-size:10px;font-weight:800;letter-spacing:.2px}.sparkle{color:#b58b5b;font-size:13px}
+        .message{margin:7px 0 0;font:500 13px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+        .guide-title{display:block;color:#183b32;font:800 13px/1.35 Inter,ui-sans-serif,system-ui,sans-serif}
+        .guide-message,.guide-detail{margin:9px 0 0;color:#557066;font:500 11px/1.5 Inter,ui-sans-serif,system-ui,sans-serif}
+        .guide-detail{margin-top:3px}
+        .guide-action{display:block;margin:11px 0 0 auto;padding:7px 11px;border:0;border-radius:999px;background:#e5f0e8;color:#214d40;font:800 10px/1.2 Inter,ui-sans-serif,system-ui,sans-serif;cursor:pointer}
+        .guide-action:hover{background:#dcebe1}.guide-action:focus-visible{outline:2px solid #2c6655;outline-offset:2px}
+        .close{position:absolute;top:8px;right:8px;width:25px;height:25px;border:0;border-radius:50%;background:#eef4ef;color:#42645a;font:18px/1 sans-serif;cursor:pointer}.close:focus-visible{outline:2px solid #2c6655;outline-offset:2px}
+        @keyframes buddyArrival{from{opacity:0;transform:translateY(7px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+        @keyframes float{0%,100%{transform:translateY(0) rotate(var(--buddy-rotation))}50%{transform:translateY(-5px) rotate(calc(var(--buddy-rotation) + 1deg))}}
+        @keyframes glow{0%,100%{opacity:.94}50%{opacity:1}}@keyframes blink{0%,47%,49%,100%{transform:scaleY(1)}48%{transform:scaleY(.12)}}
+        @keyframes cardIn{from{opacity:0;transform:scale(.96) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
+        @keyframes guideCardIn{from{opacity:0;transform:scale(.98) translateY(5px)}to{opacity:1;transform:scale(1) translateY(0)}}
+        @media(prefers-reduced-motion:reduce){.drift,.creature,.eye{animation:none!important}.trigger,.creature{transition:none!important}.trigger.guide-arriving,.popover{animation:none!important}}
+      </style>
+      <button class="trigger" type="button" tabindex="0" aria-label="Open a little reminder" aria-expanded="false" aria-controls="buddy-reminder">
+        <span class="drift"><span class="creature"><span class="face"><span class="eye left"></span><span class="eye right"></span><span class="mouth"></span></span></span></span>
+      </button>
+      <aside class="popover" id="buddy-reminder" role="dialog" aria-labelledby="buddy-category" hidden>
+        <button class="close" type="button" aria-label="Close reminder">×</button>
+        <div class="reminder-content"><div class="category" id="buddy-category"><span class="sparkle" aria-hidden="true">✦</span><span class="category-text"></span></div><p class="message" aria-live="polite"></p></div>
+        <div class="guide-content" aria-live="polite" hidden>
+          <strong class="guide-title"></strong>
+          <p class="guide-message"></p>
+          <p class="guide-detail"></p>
+          <button class="guide-action" type="button">Click me →</button>
+        </div>
+      </aside>`;
+  }
+  connectedCallback(){
+    this.trigger=this.shadowRoot.querySelector('.trigger');
+    this.reminderCard=this.shadowRoot.querySelector('.popover');
+    this.trigger.addEventListener('click',()=>{
+      if(this.guideStage==='intro'){this.showGuide('confirm');return}
+      if(this.guideStage==='confirm'){this.closePopover(true);return}
+      this.openPopover();
+    });
+    this.shadowRoot.querySelector('.close').addEventListener('click',()=>this.closePopover(true));
+    this.shadowRoot.querySelector('.guide-action').addEventListener('click',()=>{
+      if(this.guideStage==='intro')this.showGuide('confirm');
+      else if(this.guideStage==='confirm')this.closePopover(true);
+    });
+    this.updateConfig();
+  }
+  disconnectedCallback(){if(activeMoodBuddy===this)activeMoodBuddy=null}
+  attributeChangedCallback(){if(this.isConnected)this.updateConfig()}
+  updateConfig(){
+    const number=(name,fallback,min,max)=>{const value=Number(this.getAttribute(name));return Number.isFinite(value)?Math.max(min,Math.min(max,value)):fallback};
+    const time=(name,fallback)=>{const value=this.getAttribute(name)||fallback;return /^-?\d*\.?\d+(ms|s)?$/.test(value)?(/(ms|s)$/.test(value)?value:`${value}s`):fallback};
+    this.style.setProperty('--buddy-x',`${number('x',90,0,100)}%`);
+    this.style.setProperty('--buddy-y',`${number('y',15,0,100)}%`);
+    this.style.setProperty('--buddy-size',`${number('size',38,28,56)}px`);
+    this.style.setProperty('--buddy-rotation',`${number('rotation',0,-12,12)}deg`);
+    const color=this.getAttribute('color');
+    this.style.setProperty('--buddy-color',color&&CSS.supports('color',color)?color:'#6e9b85');
+    this.style.setProperty('--buddy-delay',time('animation-delay','0s'));
+    this.style.setProperty('--buddy-duration',time('animation-duration','7.5s'));
+    const expression=this.getAttribute('expression')||'calm',shape=this.getAttribute('shape')||'soft';
+    const creature=this.shadowRoot.querySelector('.creature'),face=this.shadowRoot.querySelector('.face');
+    creature.className=`creature shape-${['soft','round','taper','pear','wisp','cloud'].includes(shape)?shape:'soft'}`;
+    face.className=`face ${['calm','curious','hopeful','sleepy','thoughtful','shy','happy','resting','brave','gentle'].includes(expression)?expression:'calm'}`;
+    this.shadowRoot.querySelector('.category-text').textContent=this.getAttribute('category')||'A little reminder';
+    this.shadowRoot.querySelector('.message').textContent=this.getAttribute('message')||'Be a little gentler with yourself today.';
+  }
+  setReminder(reminder){
+    this.shadowRoot.querySelector('.category-text').textContent=reminder.category;
+    this.shadowRoot.querySelector('.message').textContent=reminder.message;
+  }
+  showGuide(stage='intro'){
+    if(activeMoodBuddy&&activeMoodBuddy!==this)activeMoodBuddy.closePopover();
+    activeMoodBuddy=this;
+    this.guideStage=stage;
+    const guide=this.shadowRoot.querySelector('.guide-content');
+    this.shadowRoot.querySelector('.reminder-content').hidden=true;
+    guide.hidden=false;
+    this.reminderCard.classList.add('is-guide');
+    this.reminderCard.setAttribute('aria-labelledby','guide-title');
+    this.shadowRoot.querySelector('.guide-title').textContent=stage==='intro'?"Hi, I'm your little guide ✦":"That's it ✦";
+    this.shadowRoot.querySelector('.guide-message').textContent=stage==='intro'?'See those little buddies around CareOS?':'You can explore the other little buddies around the page too.';
+    this.shadowRoot.querySelector('.guide-detail').textContent=stage==='intro'?'You can click them to discover little reminders, thoughts and surprises.':'Each one has a little reminder waiting for you.';
+    this.shadowRoot.querySelector('.guide-action').textContent=stage==='intro'?'Click me →':'Got it →';
+    this.reminderCard.hidden=false;
+    this.trigger.classList.add('is-open','guide-arriving');
+    this.trigger.setAttribute('aria-expanded','true');
+    this.reminderCard.classList.remove('is-entering');
+    void this.reminderCard.offsetWidth;
+    this.reminderCard.classList.add('is-entering');
+    this.updatePopoverPosition();
+    clearTimeout(window.__buddyArrivalTimer);
+    window.__buddyArrivalTimer=setTimeout(()=>this.trigger.classList.remove('guide-arriving'),480);
+  }
+  finishGuide(){
+    this.guideStage=null;
+    this.reminderCard.classList.remove('is-guide','is-entering');
+    this.reminderCard.setAttribute('aria-labelledby','buddy-category');
+    this.shadowRoot.querySelector('.guide-content').hidden=true;
+    this.shadowRoot.querySelector('.reminder-content').hidden=false;
+    try{localStorage.setItem('careosBuddyIntroSeen','true')}catch{}
+    showBuddyHelp();
+    highlightOtherBuddy(this);
+  }
+  openPopover(){
+    if(activeMoodBuddy&&activeMoodBuddy!==this)activeMoodBuddy.closePopover();
+    activeMoodBuddy=this;
+    this.guideStage=null;
+    this.reminderCard.classList.remove('is-guide');
+    this.reminderCard.setAttribute('aria-labelledby','buddy-category');
+    this.shadowRoot.querySelector('.guide-content').hidden=true;
+    this.shadowRoot.querySelector('.reminder-content').hidden=false;
+    this.setReminder(nextReminder());
+    this.reminderCard.hidden=false;
+    this.trigger.classList.add('is-open');
+    this.trigger.setAttribute('aria-expanded','true');
+    this.reminderCard.classList.remove('is-entering');
+    void this.reminderCard.offsetWidth;
+    this.reminderCard.classList.add('is-entering');
+    this.updatePopoverPosition();
+  }
+  closePopover(restoreFocus=false){
+    if(!this.reminderCard)return;
+    if(this.guideStage)this.finishGuide();
+    this.reminderCard.hidden=true;
+    this.trigger.classList.remove('is-open');
+    this.trigger.setAttribute('aria-expanded','false');
+    if(activeMoodBuddy===this)activeMoodBuddy=null;
+    if(restoreFocus)this.trigger.focus();
+  }
+  updatePopoverPosition(){
+    if(!this.reminderCard||this.reminderCard.hidden)return;
+    const buddy=this.getBoundingClientRect(),card=this.reminderCard;
+    const bounds=card.getBoundingClientRect(),width=bounds.width,height=bounds.height;
+    const viewportWidth=document.documentElement.clientWidth||window.innerWidth;
+    const viewportHeight=document.documentElement.clientHeight||window.innerHeight;
+    const left=Math.max(14,Math.min(buddy.left+buddy.width/2-width/2,viewportWidth-width-14));
+    let top=buddy.bottom+10;
+    if(top+height>viewportHeight-14)top=buddy.top-height-10;
+    card.style.left=`${left}px`;
+    card.style.top=`${Math.max(14,Math.min(top,viewportHeight-height-14))}px`;
+  }
+}
+const reminders=[
+  {id:'small-step',category:'A little reminder',message:'Taking one small step still counts.'},
+  {id:'not-everything',category:'For today',message:"You don't have to have everything figured out today."},
+  {id:'rest',category:'Take a breath',message:'Rest can be part of moving forward.'},
+  {id:'unsure',category:'A gentle thought',message:"Being unsure doesn't mean you're behind."},
+  {id:'ask-help',category:'You can ask',message:'You are allowed to ask for help.'},
+  {id:'quiet-progress',category:'For today',message:'Progress can be quiet.'},
+  {id:'getting-through',category:'A little reminder',message:'Some days are for growing; some are simply for getting through.'},
+  {id:'honesty',category:'A gentle thought',message:'You deserve spaces where you can be honest.'},
+  {id:'starting',category:'You can take your time',message:'Starting small is still starting.'},
+  {id:'own-pace',category:'For today',message:'Your pace is allowed to be your pace.'},
+  {id:'heard',category:'A little reminder',message:"You don't have to explain everything perfectly to be heard."},
+  {id:'reach-out',category:'A gentle thought',message:'Reaching out can be an act of courage.'},
+  {id:'not-knowing',category:'For today',message:'Not knowing what you need yet is okay.'},
+  {id:'gentleness',category:'Take a breath',message:'Be a little gentler with yourself today.'},
+  {id:'care-adds',category:'A little reminder',message:'Small moments of care add up.'},
+  {id:'change-direction',category:'You can take your time',message:'You are allowed to change direction.'},
+  {id:'tomorrow',category:'For today',message:"Tomorrow doesn't need to be solved today."},
+  {id:'talking',category:'A gentle thought',message:'Talking about how you feel is not a weakness.'},
+  {id:'support-words',category:'You can ask',message:'Sometimes the first step is simply saying, “I need some support.”'},
+  {id:'pause',category:'Take a breath',message:'A pause can be a way of listening to yourself.'},
+  {id:'questions',category:'A little reminder',message:'You can ask a question before making any decisions.'},
+  {id:'room',category:'For today',message:'Your feelings deserve room, even when they feel complicated.'},
+  {id:'small-next',category:'You can take your time',message:'It is okay if your next step is a small one.'},
+  {id:'support-options',category:'A gentle thought',message:'You can explore support without deciding everything at once.'}
+];
+let recentReminderIds=[];
+try{recentReminderIds=JSON.parse(sessionStorage.getItem('careos-reminder-history')||'[]').filter(id=>reminders.some(reminder=>reminder.id===id))}catch{}
+function nextReminder(){
+  const fresh=reminders.filter(reminder=>!recentReminderIds.includes(reminder.id));
+  const pool=fresh.length?fresh:reminders.filter(reminder=>reminder.id!==recentReminderIds[0]);
+  const reminder=pool[Math.floor(Math.random()*pool.length)];
+  recentReminderIds=[reminder.id,...recentReminderIds.filter(id=>id!==reminder.id)].slice(0,reminders.length);
+  try{sessionStorage.setItem('careos-reminder-history',JSON.stringify(recentReminderIds))}catch{}
+  return reminder;
+}
+function showBuddyHelp(){
+  const help=document.getElementById('buddyHelp');
+  let seen=false,dismissed=false;
+  try{seen=localStorage.getItem('careosBuddyIntroSeen')==='true';dismissed=localStorage.getItem('careosBuddyHelpDismissed')==='true'}catch{}
+  if(help)help.hidden=!seen||dismissed;
+}
+function highlightOtherBuddy(welcomeBuddy){
+  const buddies=[...document.querySelectorAll('mood-buddy')].filter(buddy=>buddy!==welcomeBuddy);
+  const visible=buddies.find(buddy=>{
+    if(getComputedStyle(buddy).display==='none')return false;
+    const rect=buddy.getBoundingClientRect();
+    return rect.width>0&&rect.height>0&&rect.bottom>0&&rect.top<window.innerHeight&&rect.right>0&&rect.left<window.innerWidth;
+  });
+  const isMobile=window.matchMedia('(max-width: 820px)').matches;
+  const target=visible||buddies.find(buddy=>isMobile&&buddy.classList.contains('mobile-hide'))||buddies.find(buddy=>getComputedStyle(buddy).display!=='none');
+  if(!target)return;
+  if(!visible&&isMobile)target.classList.add('onboarding-mobile-spotlight');
+  target.classList.add('onboarding-highlight');
+  clearTimeout(window.__buddySpotlightTimer);
+  window.__buddySpotlightTimer=setTimeout(()=>{
+    target.classList.remove('onboarding-highlight','onboarding-mobile-spotlight');
+  },1500);
+}
+document.addEventListener('pointerdown',event=>{if(activeMoodBuddy&&!event.composedPath().includes(activeMoodBuddy))activeMoodBuddy.closePopover()});
+document.addEventListener('keydown',event=>{if(activeMoodBuddy&&event.key==='Escape'){event.preventDefault();activeMoodBuddy.closePopover(true)}});
+window.addEventListener('resize',()=>activeMoodBuddy?.updatePopoverPosition());
+window.addEventListener('scroll',()=>activeMoodBuddy?.updatePopoverPosition(),true);
+customElements.define('mood-buddy',MoodBuddy);
+const welcomeBuddy=document.querySelector('.welcome-buddy');
+const buddyHelp=document.getElementById('buddyHelp');
+let buddyIntroSeen=false;
+try{buddyIntroSeen=localStorage.getItem('careosBuddyIntroSeen')==='true'}catch{}
+if(buddyHelp){
+  buddyHelp.querySelector('.buddy-help-open').addEventListener('click',()=>{
+    buddyHelp.hidden=true;
+    welcomeBuddy.showGuide('intro');
+  });
+  buddyHelp.querySelector('.buddy-help-dismiss').addEventListener('click',()=>{
+    buddyHelp.hidden=true;
+    try{localStorage.setItem('careosBuddyHelpDismissed','true')}catch{}
+  });
+}
+if(welcomeBuddy){
+  if(buddyIntroSeen)showBuddyHelp();
+  else{
+    welcomeBuddy.classList.add('intro-pending');
+    window.setTimeout(()=>{
+      welcomeBuddy.classList.remove('intro-pending');
+      welcomeBuddy.showGuide('intro');
+    },800);
+  }
+}
+
+</script>
+</body>
+</html>
